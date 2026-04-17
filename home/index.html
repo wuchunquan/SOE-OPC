@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一人国企·OPC · 城投国企AI智能协作平台</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=Noto+Sans+SC:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:     #0f172a;
+    --stone:   #334155;
+    --mist:    #94a3b8;
+    --paper:   #f8fafc;
+    --cream:   #e2e8f0;
+    --warm:    #bfdbfe;
+    --accent:  #2563eb;
+    --accent2: #0ea5e9;
+    --accent-light: #dbeafe;
+    --line:    rgba(15,23,42,0.08);
+    --line-strong: rgba(15,23,42,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
+    font-size: 16px;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* custom cursor */
+  .cursor {
+    position: fixed;
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all 0.15s ease-out;
+    opacity: 0.4;
+  }
+
+  /* scroll snap */
+  .slide {
+    height: 100vh;
+    scroll-snap-align: start;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ====== progress bar ====== */
+  .progress-bar {
+    position: fixed; top: 0; left: 0;
+    height: 3px; width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    z-index: 1000;
+    transition: width 0.3s;
+  }
+
+  /* ====== top logo bar ====== */
+  .top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 950;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 28px;
+  }
+  .top-bar a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #fff;
+    transition: opacity 0.3s;
+  }
+  .top-bar a:hover {
+    opacity: 0.8;
+  }
+  .top-bar img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+  }
+  .top-bar span {
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.9);
+  }
+
+  /* ====== nav dots ====== */
+  .nav-dots {
+    position: fixed; right: 28px; top: 50%;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 14px;
+    z-index: 900;
+  }
+  .nav-dot {
+    width: 10px; height: 10px;
+    border: 1.5px solid var(--mist);
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .nav-dot.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: scale(1.3);
+  }
+
+  /* ====== typography ====== */
+  .section-label {
+    font-size: 0.7rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 1.2rem;
+  }
+  .section-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+  .section-desc {
+    font-size: 1.05rem;
+    color: var(--stone);
+    line-height: 1.8;
+    max-width: 680px;
+  }
+
+  /* ====== animations ====== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.12s; }
+  .reveal-delay-2 { transition-delay: 0.24s; }
+  .reveal-delay-3 { transition-delay: 0.36s; }
+  .reveal-delay-4 { transition-delay: 0.48s; }
+  .reveal-delay-5 { transition-delay: 0.60s; }
+
+  /* slide-left */
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* ============================
+     SLIDE 1  —  HERO
+     ============================ */
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    color: #fff;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 60%, rgba(37,99,235,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 30%, rgba(14,165,233,0.1) 0%, transparent 60%);
+  }
+  /* grid overlay */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 820px;
+    padding: 0 2rem;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(37,99,235,0.15);
+    border: 1px solid rgba(37,99,235,0.3);
+    border-radius: 100px;
+    padding: 8px 20px;
+    font-size: 0.8rem;
+    color: #93c5fd;
+    letter-spacing: 2px;
+    margin-bottom: 2.5rem;
+    backdrop-filter: blur(10px);
+  }
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: #60a5fa;
+    border-radius: 50%;
+    animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .hero h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(2.8rem, 6vw, 4.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+  }
+  .hero h1 .brand-dot {
+    color: var(--accent);
+  }
+  .hero .sub {
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    color: #94a3b8;
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+  }
+  .hero .company-name {
+    font-size: 0.85rem;
+    color: #64748b;
+    letter-spacing: 3px;
+    margin-bottom: 3rem;
+  }
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 36px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    font-family: inherit;
+  }
+  .hero-cta:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(37,99,235,0.3);
+  }
+  .hero-cta svg {
+    transition: transform 0.3s;
+  }
+  .hero-cta:hover svg {
+    transform: translateX(4px);
+  }
+  .hero-logo {
+    display: block;
+    margin: 0 auto 1.5rem;
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 20px rgba(37,99,235,0.3));
+    animation: logo-float 4s ease-in-out infinite;
+  }
+  @keyframes logo-float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+  }
+  .hero-tags {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+    backdrop-filter: blur(10px);
+  }
+  .hero-tag--lobster {
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5;
+  }
+  .hero-tag--lobster .tag-icon {
+    font-size: 1rem;
+  }
+  .hero-tag--ai {
+    background: rgba(37,99,235,0.12);
+    border: 1px solid rgba(37,99,235,0.3);
+    color: #93c5fd;
+  }
+  .hero-scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-8px); }
+  }
+  .scroll-line {
+    width: 1px; height: 36px;
+    background: linear-gradient(to bottom, #64748b, transparent);
+  }
+
+  /* ============================
+     SLIDE 2  —  PAIN POINTS
+     ============================ */
+  .pain {
+    display: flex;
+    align-items: center;
+    background: var(--paper);
+    position: relative;
+  }
+  .pain::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 40% 50% at 90% 20%, rgba(37,99,235,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 30% 40% at 10% 80%, rgba(14,165,233,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .pain::after {
+    content: '';
+    position: absolute;
+    top: 10%;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    border: 1px solid rgba(37,99,235,0.06);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .pain-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 4rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+  }
+  .pain-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .pain-card {
+    padding: 28px 24px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    transition: all 0.3s;
+  }
+  .pain-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 8px 30px rgba(37,99,235,0.08);
+    transform: translateY(-4px);
+  }
+  .pain-card .pain-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--accent-light);
+  }
+  .pain-card .pain-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .pain-card h4 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .pain-card p {
+    font-size: 0.82rem;
+    color: var(--mist);
+    line-height: 1.6;
+  }
+
+  /* ============================
+     SLIDE 3  —  AI ROLES
+     ============================ */
+  .roles {
+    display: flex;
+    align-items: center;
+    background: #0f172a;
+    color: #fff;
+    position: relative;
+  }
+  .roles::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 50% 50% at 80% 50%, rgba(37,99,235,0.08) 0%, transparent 60%);
+  }
+  .roles-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 4rem;
+    width: 100%;
+  }
+  .roles-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+  .roles-header .section-title {
+    color: #fff;
+  }
+  .roles-header .section-desc {
+    color: #94a3b8;
+    margin: 0 auto;
+  }
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .role-item {
+    padding: 28px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .role-item:hover {
+    border-color: rgba(37,99,235,0.4);
+    background: rgba(37,99,235,0.06);
+    transform: translateY(-3px);
+  }
+  .role-item .role-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(37,99,235,0.12);
+  }
+  .role-item .role-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: #60a5fa;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .role-item h4 {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #e2e8f0;
+  }
+  .role-item p {
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.5;
+  }
+
+  /* ============================
+     SLIDE 4  —  FEATURES
+     ============================ */
+  .features {
+    display: flex;
+    align-items: center;
+    background: var(--paper);
+    position: relative;
+  }
+  .features::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 50% 50% at 15% 30%, rgba(37,99,235,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse 35% 45% at 85% 70%, rgba(14,165,233,0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .features::after {
+    content: '';
+    position: absolute;
+    bottom: 8%;
+    left: -40px;
+    width: 160px;
+    height: 160px;
+    border: 1px dashed rgba(37,99,235,0.08);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .features-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 4rem;
+    width: 100%;
+  }
+  .features-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+  .features-header .section-desc {
+    margin: 0 auto;
+  }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .feature-card {
+    padding: 32px 28px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .feature-card:hover::before {
+    opacity: 1;
+  }
+  .feature-card:hover {
+    border-color: transparent;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.06);
+    transform: translateY(-4px);
+  }
+  .feature-card .feat-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: var(--accent-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .feature-card .feat-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .feature-card h4 {
+    font-size: 1.05rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .feature-card p {
+    font-size: 0.85rem;
+    color: var(--mist);
+    line-height: 1.7;
+  }
+
+  /* ============================
+     SLIDE 5  —  WORKFLOW / LIFECYCLE
+     ============================ */
+  .workflow {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(180deg, #f1f5f9 0%, var(--paper) 100%);
+    position: relative;
+  }
+  .workflow::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 45% 45% at 80% 20%, rgba(37,99,235,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse 30% 35% at 20% 75%, rgba(14,165,233,0.03) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .workflow::after {
+    content: '';
+    position: absolute;
+    top: 15%;
+    left: 5%;
+    width: 120px;
+    height: 120px;
+    border: 1px solid rgba(37,99,235,0.06);
+    border-radius: 24px;
+    transform: rotate(15deg);
+    pointer-events: none;
+  }
+  .workflow-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 4rem;
+    width: 100%;
+  }
+  .workflow-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+  .workflow-header .section-desc {
+    margin: 0 auto;
+  }
+  .workflow-items {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    position: relative;
+  }
+  /* connecting line */
+  .workflow-items::before {
+    content: '';
+    position: absolute;
+    top: 36px; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+    opacity: 0.3;
+  }
+  .wf-item {
+    text-align: center;
+    padding: 24px 16px;
+  }
+  .wf-num {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    position: relative;
+    z-index: 2;
+  }
+  .wf-item h4 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+  .wf-item p {
+    font-size: 0.8rem;
+    color: var(--mist);
+    line-height: 1.6;
+  }
+
+  /* ============================
+     SLIDE 6  —  CHAT DEMO
+     ============================ */
+  .chat-demo {
+    display: flex;
+    align-items: center;
+    background: #0f172a;
+    color: #fff;
+    position: relative;
+  }
+  .chat-demo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 60% at 50% 50%, rgba(37,99,235,0.06) 0%, transparent 60%);
+  }
+  .chat-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 4rem;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 5rem;
+    align-items: center;
+    width: 100%;
+  }
+  .chat-info .section-title {
+    color: #fff;
+  }
+  .chat-info .section-desc {
+    color: #94a3b8;
+  }
+  .chat-features {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .chat-feat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: #cbd5e1;
+  }
+  .chat-feat .cf-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .chat-window {
+    background: #1e293b;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .chat-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+  }
+  .chat-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+  }
+  .chat-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #e2e8f0;
+  }
+  .chat-role-label {
+    font-size: 0.7rem;
+    color: #64748b;
+  }
+  .chat-messages {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 320px;
+  }
+  .msg {
+    max-width: 82%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+  .msg-user {
+    align-self: flex-end;
+    background: var(--accent);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .msg-ai {
+    align-self: flex-start;
+    background: rgba(255,255,255,0.06);
+    color: #cbd5e1;
+    border-bottom-left-radius: 4px;
+  }
+  .msg-ai strong {
+    color: #93c5fd;
+  }
+  .chat-input-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .chat-input-bar input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #94a3b8;
+    font-size: 0.82rem;
+    outline: none;
+    font-family: inherit;
+  }
+  .chat-send-btn {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--accent);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chat-send-btn:hover {
+    background: #1d4ed8;
+  }
+
+  /* ============================
+     SLIDE 7  —  THREE PILLARS
+     ============================ */
+  .pillars {
+    display: flex;
+    align-items: center;
+    background: var(--paper);
+    position: relative;
+  }
+  .pillars::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 40% 50% at 75% 25%, rgba(37,99,235,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse 35% 40% at 25% 70%, rgba(14,165,233,0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .pillars::after {
+    content: '';
+    position: absolute;
+    bottom: 12%;
+    right: 3%;
+    width: 180px;
+    height: 180px;
+    border: 1px dashed rgba(37,99,235,0.07);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .pillars-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 4rem;
+    width: 100%;
+  }
+  .pillars-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+  .pillars-header .section-desc {
+    margin: 0 auto;
+  }
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+  .pillars-grid--four {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .pillar-icon--lobster {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2) !important;
+  }
+  .pillar-card {
+    text-align: center;
+    padding: 40px 32px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #fff;
+    transition: all 0.3s;
+  }
+  .pillar-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 16px 48px rgba(37,99,235,0.08);
+    transform: translateY(-5px);
+  }
+  .pillar-icon {
+    width: 64px; height: 64px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent-light), #eff6ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+  .pillar-icon svg {
+    width: 32px;
+    height: 32px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .pillar-icon.pillar-icon--lobster svg {
+    stroke: #ef4444;
+  }
+  .pillar-card h4 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .pillar-card p {
+    font-size: 0.88rem;
+    color: var(--stone);
+    line-height: 1.8;
+  }
+
+  /* ============================
+     SLIDE 8  —  CTA
+     ============================ */
+  .cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    color: #fff;
+    position: relative;
+  }
+  .cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(37,99,235,0.1) 0%, transparent 60%);
+  }
+  .cta-inner {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 600px;
+    padding: 0 2rem;
+  }
+  .cta-inner .section-title {
+    color: #fff;
+    margin-bottom: 1.5rem;
+  }
+  .cta-inner .section-desc {
+    color: #94a3b8;
+    margin: 0 auto 2.5rem;
+    text-align: center;
+  }
+  .cta-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 3rem;
+  }
+  .cta-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    font-family: inherit;
+  }
+  .cta-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(37,99,235,0.3);
+  }
+  .cta-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    font-family: inherit;
+  }
+  .cta-secondary:hover {
+    border-color: rgba(255,255,255,0.3);
+    color: #e2e8f0;
+  }
+  .cta-qrcode {
+    margin-bottom: 2rem;
+  }
+  .cta-qrcode img {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.1);
+  }
+  .cta-qrcode p {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 10px;
+  }
+  .cta-contact {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 0.8rem;
+  }
+  .cta-contact strong {
+    color: #93c5fd;
+  }
+  .cta-company {
+    font-size: 0.75rem;
+    color: #475569;
+    letter-spacing: 2px;
+  }
+
+  /* ====== responsive ====== */
+  @media (max-width: 1024px) {
+    .pain-inner {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+      padding: 0 2rem;
+    }
+    .chat-inner {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      padding: 0 2rem;
+    }
+    .roles-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .features-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .pillars-grid--four {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .workflow-items {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .workflow-items::before {
+      display: none;
+    }
+    .nav-dots { display: none; }
+  }
+  @media (max-width: 768px) {
+    .slide { height: auto; min-height: 100vh; scroll-snap-align: none; }
+    html { scroll-snap-type: none; }
+    .roles-grid,
+    .features-grid,
+    .pillars-grid,
+    .pillars-grid--four {
+      grid-template-columns: 1fr;
+    }
+    .pain-cards {
+      grid-template-columns: 1fr;
+    }
+    .workflow-items {
+      grid-template-columns: 1fr;
+    }
+    .hero h1 {
+      font-size: 2.2rem;
+    }
+    .cta-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- top bar -->
+<a class="top-bar" href="https://www.xhxz.top" target="_blank">
+  <img src="https://opc.xhxz.top/company.png" alt="星环集团" />
+  <span>星环集团</span>
+</a>
+
+<!-- cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- progress -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- nav dots -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- ========== SLIDE 1 : HERO ========== -->
+<section class="slide hero" id="slide-0">
+  <div class="hero-inner">
+    <img src="https://opc.xhxz.top/logo.png" class="hero-logo reveal" alt="一人国企OPC" />
+    <div class="hero-badge reveal reveal-delay-1">城投国企 AI 智能协作平台</div>
+    <h1 class="reveal reveal-delay-1">一人国企<span class="brand-dot">·</span>OPC</h1>
+    <p class="sub reveal reveal-delay-2">以 AI 专家团队赋能城投国企，让一人也能高效运转</p>
+    <div class="hero-tags reveal reveal-delay-3">
+      <span class="hero-tag hero-tag--lobster"><span class="tag-icon">🦞</span> 国产小龙虾</span>
+      <span class="hero-tag hero-tag--ai">🤖 9位AI专家在线</span>
+    </div>
+    <p class="company-name reveal reveal-delay-3">四川星河长明数字科技有限责任公司</p>
+    <a class="hero-cta reveal reveal-delay-4" href="https://opc.xhxz.top/auth/login">
+      立即体验
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+  <div class="hero-scroll-hint">
+    <span>SCROLL</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 2 : PAIN POINTS ========== -->
+<section class="slide pain" id="slide-1">
+  <div class="pain-inner">
+    <div>
+      <p class="section-label reveal">CHALLENGES</p>
+      <h2 class="section-title reveal reveal-delay-1">城投国企<br>面临的挑战</h2>
+      <p class="section-desc reveal reveal-delay-2">
+        人员精简、事务繁杂——公文写作、投融资分析、合规审查、经营管理……
+        每一项都需要专业能力，但不可能为每个岗位都配齐专人。
+      </p>
+    </div>
+    <div class="pain-cards">
+      <div class="pain-card reveal">
+        <div class="pain-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h4>公文写作繁重</h4>
+        <p>各类公文、报告、方案起草耗费大量时间，格式规范复杂</p>
+      </div>
+      <div class="pain-card reveal reveal-delay-1">
+        <div class="pain-icon">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <h4>投融资决策复杂</h4>
+        <p>债务结构分析、融资方案设计需要专业金融知识支撑</p>
+      </div>
+      <div class="pain-card reveal reveal-delay-2">
+        <div class="pain-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h4>合规风险管控</h4>
+        <p>政策法规频繁更新，合规审查和风险把控需持续跟进</p>
+      </div>
+      <div class="pain-card reveal reveal-delay-3">
+        <div class="pain-icon">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <h4>经营分析吃力</h4>
+        <p>数据汇总、趋势分析、绩效评估缺乏专业工具支撑</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 3 : AI ROLES ========== -->
+<section class="slide roles" id="slide-2">
+  <div class="roles-inner">
+    <div class="roles-header">
+      <p class="section-label reveal">AI EXPERT TEAM</p>
+      <h2 class="section-title reveal reveal-delay-1">9 位 AI 专家<br>覆盖国企核心岗位</h2>
+      <p class="section-desc reveal reveal-delay-2">
+        每位 AI 专家都经过专业知识训练，随时待命，即问即答
+      </p>
+    </div>
+    <div class="roles-grid">
+      <div class="role-item reveal">
+        <div class="role-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h4>公文写作专家</h4>
+        <p>各类公文、报告、方案的起草与润色</p>
+      </div>
+      <div class="role-item reveal reveal-delay-1">
+        <div class="role-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h4>投融资顾问</h4>
+        <p>融资方案设计、债务分析与结构优化</p>
+      </div>
+      <div class="role-item reveal reveal-delay-2">
+        <div class="role-icon">
+          <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <h4>经营分析师</h4>
+        <p>数据分析、经营报告与趋势研判</p>
+      </div>
+      <div class="role-item reveal reveal-delay-3">
+        <div class="role-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h4>法务合规顾问</h4>
+        <p>合规审查、风险识别与法律咨询</p>
+      </div>
+      <div class="role-item reveal reveal-delay-4">
+        <div class="role-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        </div>
+        <h4>项目管理专家</h4>
+        <p>项目规划、进度跟踪与协调管理</p>
+      </div>
+      <div class="role-item reveal reveal-delay-5">
+        <div class="role-icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h4>党建行政助手</h4>
+        <p>党务工作、行政事务与会议管理</p>
+      </div>
+      <div class="role-item reveal">
+        <div class="role-icon">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </div>
+        <h4>综合研究员</h4>
+        <p>政策解读、行业研究与信息检索</p>
+      </div>
+      <div class="role-item reveal reveal-delay-1">
+        <div class="role-icon">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <h4>财务管理顾问</h4>
+        <p>预算编制、成本控制与财务分析</p>
+      </div>
+      <div class="role-item reveal reveal-delay-2">
+        <div class="role-icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h4>人力资源顾问</h4>
+        <p>招聘管理、绩效考核与制度建设</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 4 : FEATURES ========== -->
+<section class="slide features" id="slide-3">
+  <div class="features-inner">
+    <div class="features-header">
+      <p class="section-label reveal">CORE FEATURES</p>
+      <h2 class="section-title reveal reveal-delay-1">强大功能<br>为国企量身打造</h2>
+      <p class="section-desc reveal reveal-delay-2">
+        深度整合 AI 能力，覆盖日常办公全场景
+      </p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h4>AI 智能对话</h4>
+        <p>与 AI 专家自然对话，获取专业建议与内容生成</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h4>公文写作中心</h4>
+        <p>AI 辅助公文起草，自动适配格式规范</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
+        <h4>企业知识库</h4>
+        <p>上传内部文档，AI 自动学习并提供精准检索</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </div>
+        <h4>多渠道集成</h4>
+        <p>灵活配置多种 AI 模型渠道，自由切换选择</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-4">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <h4>技能扩展</h4>
+        <p>安装专业技能包，让 AI 具备更多行业能力</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-5">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h4>桌面客户端</h4>
+        <p>独立桌面应用，更快响应速度与本地化体验</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 5 : WORKFLOW ========== -->
+<section class="slide workflow" id="slide-4">
+  <div class="workflow-inner">
+    <div class="workflow-header">
+      <p class="section-label reveal">WORKFLOW</p>
+      <h2 class="section-title reveal reveal-delay-1">四大业务方向<br>全面覆盖</h2>
+      <p class="section-desc reveal reveal-delay-2">
+        从日常行政到投融资管理，AI 助手贯穿每一个工作环节
+      </p>
+    </div>
+    <div class="workflow-items">
+      <div class="wf-item reveal">
+        <div class="wf-num">01</div>
+        <h4>行政办公</h4>
+        <p>公文起草、会议纪要、通知公告、日常事务处理</p>
+      </div>
+      <div class="wf-item reveal reveal-delay-1">
+        <div class="wf-num">02</div>
+        <h4>投融资管理</h4>
+        <p>融资方案设计、债务结构优化、投资分析研判</p>
+      </div>
+      <div class="wf-item reveal reveal-delay-2">
+        <div class="wf-num">03</div>
+        <h4>财务与数据</h4>
+        <p>预算编制、成本分析、经营数据汇总与趋势预测</p>
+      </div>
+      <div class="wf-item reveal reveal-delay-3">
+        <div class="wf-num">04</div>
+        <h4>合规与人事</h4>
+        <p>合规审查、风险管控、招聘绩效、制度建设</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 6 : CHAT DEMO ========== -->
+<section class="slide chat-demo" id="slide-5">
+  <div class="chat-inner">
+    <div class="chat-info">
+      <p class="section-label reveal">AI IN ACTION</p>
+      <h2 class="section-title reveal reveal-delay-1">像与专家对话<br>一样简单</h2>
+      <p class="section-desc reveal reveal-delay-2">
+        选择对应领域的 AI 专家，用自然语言描述需求，即可获得专业分析与建议
+      </p>
+      <div class="chat-features reveal reveal-delay-3">
+        <div class="chat-feat">
+          <div class="cf-dot"></div>
+          <span>上下文理解，多轮深入对话</span>
+        </div>
+        <div class="chat-feat">
+          <div class="cf-dot"></div>
+          <span>结合知识库，精准回答业务问题</span>
+        </div>
+        <div class="chat-feat">
+          <div class="cf-dot"></div>
+          <span>一键导出为规范文档</span>
+        </div>
+      </div>
+    </div>
+    <div class="chat-window reveal reveal-left">
+      <div class="chat-titlebar">
+        <div class="chat-avatar">💹</div>
+        <div>
+          <div class="chat-name">叶晴灵 · 投融资顾问</div>
+          <div class="chat-role-label">Financing Advisor</div>
+        </div>
+      </div>
+      <div class="chat-messages">
+        <div class="msg msg-user">请分析一下目前公司的债务结构，存在哪些风险？</div>
+        <div class="msg msg-ai">
+          根据您提供的财报数据，当前债务结构存在以下问题：<br><br>
+          <strong>1. 短期偿债压力较大</strong><br>
+          短期借款占比 62%，流动比率仅 0.85，低于安全线<br><br>
+          <strong>2. 融资渠道单一</strong><br>
+          银行贷款占比超过 80%，建议拓展债券、信托等多元融资渠道<br><br>
+        </div>
+      </div>
+      <div class="chat-input-bar">
+        <input type="text" placeholder="输入您的问题..." disabled />
+        <button class="chat-send-btn">
+          <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M2 8h12M8 2l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 7 : THREE PILLARS ========== -->
+<section class="slide pillars" id="slide-6">
+  <div class="pillars-inner">
+    <div class="pillars-header">
+      <p class="section-label reveal">WHY US</p>
+      <h2 class="section-title reveal reveal-delay-1">四大核心优势</h2>
+      <p class="section-desc reveal reveal-delay-2">
+        专为城投国企设计的 AI 协作平台
+      </p>
+    </div>
+    <div class="pillars-grid pillars-grid--four">
+      <div class="pillar-card reveal">
+        <div class="pillar-icon pillar-icon--lobster">🦞</div>
+        <h4>国产小龙虾</h4>
+        <p>使用国产大模型，数据安全有保障，响应快速稳定，为国企业务保驾护航</p>
+      </div>
+      <div class="pillar-card reveal reveal-delay-1">
+        <div class="pillar-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h4>AI 专家团队</h4>
+        <p>9 位经过专业训练的 AI 专家，覆盖城投国企核心业务场景，24 小时在线随时支持</p>
+      </div>
+      <div class="pillar-card reveal reveal-delay-2">
+        <div class="pillar-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
+        <h4>知识驱动决策</h4>
+        <p>上传企业内部文档构建知识库，AI 结合专业知识与企业实际，提供精准分析与建议</p>
+      </div>
+      <div class="pillar-card reveal reveal-delay-3">
+        <div class="pillar-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h4>安全可控部署</h4>
+        <p>支持私有化部署，数据不出企业网络；灵活对接多种 AI 模型，自主可控无供应商锁定</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 8 : CTA ========== -->
+<section class="slide cta" id="slide-7">
+  <div class="cta-inner">
+    <p class="section-label reveal">GET STARTED</p>
+    <h2 class="section-title reveal reveal-delay-1">开启智能办公新时代</h2>
+    <p class="section-desc reveal reveal-delay-2">
+      让 AI 专家团队成为您最可靠的工作伙伴
+    </p>
+    <div class="cta-actions reveal reveal-delay-3">
+      <a class="cta-primary" href="https://opc.xhxz.top/auth/login">
+        立即体验
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a class="cta-secondary" href="https://opc.xhxz.top/auth/register">
+        注册账号
+      </a>
+    </div>
+    <div class="cta-qrcode reveal reveal-delay-4">
+      <img src="https://opc.xhxz.top/wechat.png" alt="微信交流群" />
+      <p>扫码加入微信交流群</p>
+    </div>
+    <p class="cta-contact reveal reveal-delay-4">
+      私有部署定制请联系微信：<strong>fine8_8</strong>
+    </p>
+    <p class="cta-company reveal reveal-delay-5">四川星河长明数字科技有限责任公司</p>
+  </div>
+</section>
+
+<script>
+  // ===== cursor =====
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, cx = 0, cy = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top = my + 'px';
+  });
+
+  (function animateRing() {
+    cx += (mx - cx) * 0.15;
+    cy += (my - cy) * 0.15;
+    ring.style.left = cx + 'px';
+    ring.style.top = cy + 'px';
+    requestAnimationFrame(animateRing);
+  })();
+
+  // hover effect
+  document.querySelectorAll('a, button, .pain-card, .role-item, .feature-card, .pillar-card').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      ring.style.width = '52px';
+      ring.style.height = '52px';
+      ring.style.borderColor = 'var(--accent)';
+      ring.style.opacity = '0.6';
+    });
+    el.addEventListener('mouseleave', () => {
+      ring.style.width = '36px';
+      ring.style.height = '36px';
+      ring.style.opacity = '0.4';
+    });
+  });
+
+  // ===== progress bar =====
+  const bar = document.getElementById('progressBar');
+  document.addEventListener('scroll', () => {
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (window.scrollY / h * 100) + '%';
+  });
+
+  // ===== nav dots =====
+  const slides = document.querySelectorAll('.slide');
+  const dotsBox = document.getElementById('navDots');
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'nav-dot';
+    d.addEventListener('click', () => slides[i].scrollIntoView({ behavior: 'smooth' }));
+    dotsBox.appendChild(d);
+  });
+
+  function updateDots() {
+    const dots = dotsBox.children;
+    let active = 0;
+    slides.forEach((s, i) => {
+      const r = s.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.5 && r.bottom > 0) active = i;
+    });
+    [...dots].forEach((d, i) => d.classList.toggle('active', i === active));
+  }
+  document.addEventListener('scroll', updateDots);
+  updateDots();
+
+  // ===== reveal observer =====
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.reveal, .reveal-left').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

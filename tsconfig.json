@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "jsx": "preserve",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "lib": ["esnext", "dom"],
+    "types": ["vite/client", "node", "element-plus/global"],
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@views/*": ["src/views/*"],
+      "@imgs/*": ["src/assets/images/*"],
+      "@icons/*": ["src/assets/icons/*"],
+      "@utils/*": ["src/utils/*"],
+      "@stores/*": ["src/store/*"],
+      "@plugins/*": ["src/plugins/*"],
+      "@styles/*": ["src/assets/styles/*"],
+      "@tauri-apps/plugin-http": ["src/desktop/tauri-compat/plugin-http.ts"],
+      "@tauri-apps/plugin-dialog": ["src/desktop/tauri-compat/plugin-dialog.ts"],
+      "@tauri-apps/plugin-fs": ["src/desktop/tauri-compat/plugin-fs.ts"],
+      "@tauri-apps/plugin-shell": ["src/desktop/tauri-compat/plugin-shell.ts"],
+      "@tauri-apps/plugin-clipboard-manager": ["src/desktop/tauri-compat/plugin-clipboard-manager.ts"],
+      "@tauri-apps/plugin-notification": ["src/desktop/tauri-compat/plugin-notification.ts"],
+      "@tauri-apps/api/core": ["src/desktop/tauri-compat/api-core.ts"],
+      "@tauri-apps/api/event": ["src/desktop/tauri-compat/api-event.ts"],
+      "@tauri-apps/api/window": ["src/desktop/tauri-compat/api-window.ts"],
+      "@tauri-apps/api/webviewWindow": ["src/desktop/tauri-compat/api-webviewWindow.ts"]
+    }
+  },
+  "include": ["src/**/*", "src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "exclude": ["node_modules", "dist", "**/*.js"]
+}
